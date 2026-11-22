@@ -25,10 +25,51 @@ Pongi avab `index.html`, õhuhoki avab `air-hockey.html`. Mõlemal lehel saab va
 
 ## Õhuhoki
 
-- **Üksinda** juhid vasakut löögiketast ja arvuti juhib paremat. **Kahekesi** juhib kumbki mängija ketast oma väljakupoolel. Lohista sõrme nii piki- kui ka põikisuunas. Löögiketas jääb oma poolele ka siis, kui sõrm liigub üle keskjoone.
-- Löögiketta kiirus ja suund mõjutavad litri põrget. Ümardatud poordinurgad suunavad litri väljakule tagasi. Punkt läheb kirja siis, kui litter läbib väravaava. Võidab esimene, kes lööb **7 väravat**.
-- Klaviatuuril on vasaku mängija klahvid `WASD` ja paremal nooleklahvid. Üksikmängus sobivad mõlemad klahvikomplektid. Kasuta **Paus** nuppu või `Esc` klahvi ning ava täisekraan nupuga `⛶` või `F11` klahviga.
-- Väljaku ja menüü kood on failides `air-hockey.html`, `air-hockey.css` ja `air-hockey.js`. Füüsika ja arvutivastane on failis `air-hockey-engine.js`. Mõlema mängu loogikateste käivitab `node --test`.
+### Käivitamine ja mängimine
+
+Vali Pongi lehel **Õhuhoki** või käivita Pi terminalis järgmised käsud.
+
+```bash
+cd ~/puutetundliku-ekraani-mangud
+chromium "$PWD/air-hockey.html"
+```
+
+| Režiim | Puutega | Klaviatuuriga |
+| --- | --- | --- |
+| **Üksinda** | Juhi vasakut, tsüaansinist löögiketast. Roosat ketast juhib arvuti. | Vasakut ketast juhivad `WASD` või nooleklahvid. |
+| **Kahekesi** | Kumbki mängija lohistab sõrme oma väljakupoolel. Mõlemad kettad liiguvad korraga. | Vasakut ketast juhivad `WASD`, paremat nooleklahvid. |
+
+- Löögiketas liigub nii piki- kui ka põikisuunas. Sõrm juhib sama ketast kuni tõstmiseni ka siis, kui sõrm liigub üle keskjoone. Ketas jääb oma poolele.
+- Löögiketta kiirus ja suund mõjutavad litri põrget. Värav läheb kirja, kui litter on tervenisti väravajoone ületanud. Järgmine serv suundub värava sisse lasknud mängija poole. Võidab esimene, kes lööb **7 väravat**.
+- **Paus** või `Esc` peatab mängu. Pausimenüüst saab mängu jätkata või režiimivalikusse naasta. Pärast võitu alustab **Uus mäng** sama režiimiga uuesti. Täisekraani avab `⛶` või `F11`.
+
+### Õhuhoki arendus ja ülesehitus
+
+1. **Kahe teljega juhtimine.** Nagu Pongis, määrab lohistamise alguspool, kumba ketast sõrm juhib. Õhuhokis määravad sõrme mõlemad koordinaadid ketta sihi ja ketta liikumiskiirus mõjutab löögi tugevust.
+2. **Litter ja vastane.** Füüsika töötab 1/120 sekundi sammuga. Litter põrkab poordilt ja väravapostidelt ning aeglustub väljakul. Arvuti kaitseb väravat, kui litter liigub tema poole kiiresti, ja otsib löögiasendit, kui litter on tema väljakupoolel. Neoonvärvides väljak on joonistatud HTML Canvasel.
+3. **Esimene seadmekatse.** Avaldasime mängu GitHubi `main` harus ja tõmbasime selle Pi 400-sse Raspberry Pi Connecti kaudu. Pi Chromiumis kontrollisime mõlemat mängurežiimi, kahe puute sõltumatut juhtimist, arvutivastase lööki ja väravaid. Kahe mängija mängu proovisime ka füüsilisel ekraanil. [Esimene demoversioon](https://github.com/nullyks/puutetundliku-ekraani-mangud/commit/8dfa336)
+4. **Nurgavea parandus.** Seadmekatsel jäi litter väljaku nurka kinni. Ümardasime kõik neli nurka nii joonisel kui ka füüsikas. Kui löögiketas surub litri vastu kaarjat poordi, pääseb litter liikuma piki kaart. Kontrollisime Pi Chromiumis kõigi nelja nurga põrkeid ja litri vabanemist. [Ümarnurkade parandus](https://github.com/nullyks/puutetundliku-ekraani-mangud/commit/02be7bf)
+
+| Fail | Ülesanne |
+| --- | --- |
+| [`air-hockey.html`](air-hockey.html), [`air-hockey.css`](air-hockey.css) | Mänguleht, menüüd, punktiseis ja küberpungi stiilis kujundus. |
+| [`air-hockey.js`](air-hockey.js) | Väljaku joonistamine, puute- ja klaviatuurisisend ning mängu olekud. |
+| [`air-hockey-engine.js`](air-hockey-engine.js) | Ketaste liikumine, litri põrked, serv, väravad ja arvutivastane. |
+| [`air-hockey-engine.test.cjs`](air-hockey-engine.test.cjs) | Füüsika ja mängureeglite automaattestid. |
+
+### Õhuhoki testimine
+
+Käivita arendusarvutis repo kaustas õhuhoki üheksa loogikatesti. Käsuga `node --test` käivituvad ka Pongi testid.
+
+```bash
+node --test air-hockey-engine.test.cjs
+```
+
+Pärast mängu uuendamist kontrolli Pi enda puuteekraanil neid olukordi.
+
+1. Vali **Kahekesi** ning lohista mõlemat ketast korraga eri suundades. Tõsta üks sõrm ja veendu, et teise mängija ketas liigub edasi.
+2. Suuna litter järjest eri nurkadesse. Litter peab kaarelt väljakule põrkama. Proovi seda ka löögikettaga vastu nurka surudes ja kontrolli, et litter pääseks kaare suunas liikuma.
+3. Vali **Üksinda** ja löö litter arvuti poolele. Kontrolli arvutivastase liikumist ja tagasilööki ning seda, et värav lisaks ühe punkti.
 
 ## Pongi mängujuhend
 
