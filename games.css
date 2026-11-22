@@ -111,3 +111,10 @@ header p { margin: 9px 0 0; color: #cac7d5; font-size: clamp(.86rem, 2vw, 1rem);
 .hockey .piece.left { left: 17%; }
 .hockey .piece.right { right: 16%; border-color: #ff6bc9; box-shadow: 0 0 14px #ff6bc987, inset 0 0 8px #ff6bc950; }
 .hockey .ball { z-index: 1; top: 61%; height: 10%; aspect-ratio: 1; border-radius: 50%; background: #e9ff91; box-shadow: 0 0 8px #e9ff9180; }
+
+@media (max-height: 500px) and (min-width: 600px) {
+  body { padding-block: 14px; }
+  .library header { margin-bottom: 16px; }
+  h1 { font-size: clamp(2rem, 8vh, 3rem); }
+  .preview { aspect-ratio: 3; }
+}
