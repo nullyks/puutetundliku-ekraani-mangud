@@ -10,11 +10,22 @@ const FlightControl = (() => {
   const MAX_ROUTE_POINTS = 160;
   const DOCKS = [{ x: 82, y: 230, radius: 48 }, { x: 878, y: 230, radius: 48 }];
   const ASTEROID = { x: 480, y: 230, radius: 58 };
+  const FIELD_RADIUS = 166;
+  const FIELD_ACCELERATION = 215;
+  const AVOIDANCE_RADIUS = ASTEROID.radius + SHIP_RADIUS + 2;
   const ENTRY_Y = [[102, 356, 66, 395], [356, 102, 395, 66]];
   const ENTRY_X = [768, 192];
 
   const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+  function asteroidAt(seconds) {
+    return {
+      x: ASTEROID.x + 72 * Math.sin(seconds * 2 * Math.PI / 31),
+      y: ASTEROID.y + 38 * Math.sin(seconds * 2 * Math.PI / 23),
+      radius: ASTEROID.radius,
+    };
+  }
 
   function spawn(match, side) {
     if (match.ships.filter((ship) => ship.side === side).length >= 2) return false;
@@ -29,7 +40,7 @@ const FlightControl = (() => {
         ...entry, id: match.nextId++, side,
         speed: match.mode === 'solo' && side === 1 ? 122 : 155,
         angle: side === 0 ? Math.PI : 0,
-        route: null, next: 1,
+        route: null, course: null,
       });
       return true;
     }
@@ -38,7 +49,7 @@ const FlightControl = (() => {
 
   function createMatch(mode) {
     const match = {
-      mode, time: ROUND_TIME, ended: false, winner: null,
+      mode, time: ROUND_TIME, elapsed: 0, asteroid: asteroidAt(0), ended: false, winner: null,
       scores: [0, 0], ships: [], events: [], nextId: 1,
       entryIndex: [0, 0], spawnIn: [5, 5], aiIn: 1.15,
     };
@@ -47,46 +58,91 @@ const FlightControl = (() => {
     return match;
   }
 
-  function segmentDistance(point, start, end) {
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
-    const lengthSquared = dx * dx + dy * dy;
-    if (!lengthSquared) return distance(point, start);
-    const t = clamp(((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSquared, 0, 1);
-    return Math.hypot(point.x - (start.x + dx * t), point.y - (start.y + dy * t));
+  function startCourse(ship, points) {
+    ship.route = points;
+    ship.course = { x: ship.x, y: ship.y, next: 1, driftX: 0, driftY: 0, vx: 0, vy: 0 };
   }
 
-  function advance(ship, travel) {
-    while (ship.next < ship.route.length) {
-      const point = ship.route[ship.next];
-      const remaining = distance(ship, point);
-      if (remaining > 0) ship.angle = Math.atan2(point.y - ship.y, point.x - ship.x);
+  function advanceCourse(course, route, travel) {
+    while (course.next < route.length) {
+      const point = route[course.next];
+      const remaining = distance(course, point);
       if (travel < remaining) {
-        ship.x += (point.x - ship.x) * travel / remaining;
-        ship.y += (point.y - ship.y) * travel / remaining;
+        course.x += (point.x - course.x) * travel / remaining;
+        course.y += (point.y - course.y) * travel / remaining;
         return false;
       }
-      ship.x = point.x;
-      ship.y = point.y;
-      ship.next++;
+      course.x = point.x;
+      course.y = point.y;
+      course.next++;
       travel -= remaining;
     }
     return true;
   }
 
-  function predictConflict(match, ship, points) {
-    if (points.length < 2) return null;
-    const forecast = .12;
-    const planned = { ...ship, route: points, next: 1 };
-    let others = match.ships.filter((other) => other.id !== ship.id).map((other) => ({ ...other }));
-    for (let seconds = 0; seconds < 16 && others.length > 0; seconds += forecast) {
-      if (advance(planned, planned.speed * forecast)) break;
-      others = others.filter((other) => !other.route || !advance(other, other.speed * forecast));
-      if (others.some((other) => distance(planned, other) < SHIP_RADIUS * 2 + 5)) {
-        return { x: planned.x, y: planned.y };
+  function advanceFlight(ship, dt, asteroid) {
+    const course = ship.course;
+    const complete = advanceCourse(course, ship.route, ship.speed * dt);
+    const dx = asteroid.x - ship.x;
+    const dy = asteroid.y - ship.y;
+    const d = Math.hypot(dx, dy);
+    const pull = d > 0 && d < FIELD_RADIUS
+      ? FIELD_ACCELERATION * clamp((FIELD_RADIUS - d) / (FIELD_RADIUS - ASTEROID.radius), 0, 1) / d
+      : 0;
+
+    // The flight controller gradually steers back toward the drawn course.
+    course.vx += (dx * pull - 4.5 * course.driftX - 3.4 * course.vx) * dt;
+    course.vy += (dy * pull - 4.5 * course.driftY - 3.4 * course.vy) * dt;
+    course.driftX += course.vx * dt;
+    course.driftY += course.vy * dt;
+
+    const x = clamp(course.x + course.driftX, SHIP_RADIUS, WIDTH - SHIP_RADIUS);
+    const y = clamp(course.y + course.driftY, SHIP_RADIUS, HEIGHT - SHIP_RADIUS);
+    if (x !== ship.x || y !== ship.y) ship.angle = Math.atan2(y - ship.y, x - ship.x);
+    ship.x = x;
+    ship.y = y;
+    return complete;
+  }
+
+  function isDocked(ship) {
+    const dock = DOCKS[ship.side];
+    return distance(ship, dock) <= dock.radius - SHIP_RADIUS;
+  }
+
+  function predictFlight(match, ship, points) {
+    const planned = { ...ship };
+    startCourse(planned, points);
+    let others = match.ships.filter((other) => other.id !== ship.id)
+      .map((other) => ({ ...other, course: other.course && { ...other.course } }));
+    const trajectory = [points[0]];
+    let hazard = null;
+    let risk = null;
+    let deflected = false;
+
+    for (let frame = 1; frame <= 16 / STEP && points.length > 1; frame++) {
+      const asteroid = asteroidAt(match.elapsed + frame * STEP);
+      const complete = advanceFlight(planned, STEP, asteroid);
+      deflected ||= Math.hypot(planned.course.driftX, planned.course.driftY) >= 5;
+      if (distance(planned, asteroid) <= AVOIDANCE_RADIUS) {
+        hazard = { x: planned.x, y: planned.y };
+        trajectory.push(hazard);
+        break;
       }
+
+      if (!risk && others.length > 0) {
+        others = others.filter((other) => {
+          if (!other.route) return true;
+          const arrived = advanceFlight(other, STEP, asteroid) && isDocked(other);
+          return !arrived && distance(other, asteroid) > ASTEROID.radius + SHIP_RADIUS;
+        });
+        if (others.some((other) => distance(planned, other) < SHIP_RADIUS * 2 + 5)) {
+          risk = { x: planned.x, y: planned.y };
+        }
+      }
+      if (frame % 5 === 0 || complete) trajectory.push({ x: planned.x, y: planned.y });
+      if (complete) break;
     }
-    return null;
+    return { trajectory, hazard, risk, deflected };
   }
 
   function inspectRoute(match, shipId, drawing) {
@@ -105,18 +161,19 @@ const FlightControl = (() => {
     const arrives = distance(last, dock) <= dock.radius;
     const wrongDock = distance(last, DOCKS[1 - ship.side]) <= DOCKS[1 - ship.side].radius;
     if (arrives && distance(last, dock) > 0) points.push({ x: dock.x, y: dock.y });
-    const blocked = points.some((point, index) => index > 0
-      && segmentDistance(ASTEROID, points[index - 1], point) <= ASTEROID.radius + SHIP_RADIUS + 2);
-    const risk = blocked ? null : predictConflict(match, ship, points);
-    return { points, arrives, wrongDock, blocked, risk };
+    const prediction = predictFlight(match, ship, points);
+    return { points, arrives, wrongDock, ...prediction, blocked: Boolean(prediction.hazard) };
   }
 
   function sendShip(match, shipId, drawing) {
     const plan = inspectRoute(match, shipId, drawing);
+    return dispatchPlan(match, shipId, plan);
+  }
+
+  function dispatchPlan(match, shipId, plan) {
     if (!plan || !plan.arrives || plan.blocked) return false;
     const ship = match.ships.find((item) => item.id === shipId);
-    ship.route = plan.points;
-    ship.next = 1;
+    startCourse(ship, plan.points);
     return true;
   }
 
@@ -129,7 +186,7 @@ const FlightControl = (() => {
         const drawing = [{ x: 333, y }, { x: 627, y }, dock];
         const plan = inspectRoute(match, ship.id, drawing);
         if (plan.arrives && !plan.blocked && !plan.risk) {
-          sendShip(match, ship.id, drawing);
+          dispatchPlan(match, ship.id, plan);
           return;
         }
       }
@@ -139,7 +196,12 @@ const FlightControl = (() => {
   function resolveTraffic(match, dt) {
     const removed = new Set();
     for (const ship of match.ships) {
-      if (ship.route && advance(ship, ship.speed * dt)) {
+      if (!ship.route) continue;
+      const complete = advanceFlight(ship, dt, match.asteroid);
+      if (distance(ship, match.asteroid) <= ASTEROID.radius + SHIP_RADIUS) {
+        removed.add(ship.id);
+        match.events.push({ type: 'asteroid', x: ship.x, y: ship.y });
+      } else if (complete && isDocked(ship)) {
         match.scores[ship.side]++;
         removed.add(ship.id);
         match.events.push({ type: 'docked', side: ship.side, x: ship.x, y: ship.y });
@@ -165,6 +227,8 @@ const FlightControl = (() => {
     match.events.length = 0;
     const elapsed = Math.min(match.time, dt);
     match.time -= elapsed;
+    match.elapsed += elapsed;
+    match.asteroid = asteroidAt(match.elapsed);
     resolveTraffic(match, elapsed);
     if (match.time <= 1e-8) {
       match.time = 0;
@@ -187,7 +251,7 @@ const FlightControl = (() => {
     }
   }
 
-  return { WIDTH, HEIGHT, STEP, ROUND_TIME, SHIP_RADIUS, HIT_RADIUS, MAX_ROUTE_POINTS, DOCKS, ASTEROID, distance, createMatch, inspectRoute, sendShip, step };
+  return { WIDTH, HEIGHT, STEP, ROUND_TIME, SHIP_RADIUS, HIT_RADIUS, MAX_ROUTE_POINTS, DOCKS, ASTEROID, FIELD_RADIUS, distance, asteroidAt, createMatch, inspectRoute, sendShip, step };
 })();
 
 if (typeof module !== 'undefined') module.exports = FlightControl;

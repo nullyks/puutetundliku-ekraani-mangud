@@ -28,7 +28,7 @@ Iga uus mäng saab oma HTML-lehe. Lisa selle link `index.html` mänguvalikusse j
 ## Lennujuht
 
 - **Üksinda** juhid rohelisi laevu ja arvuti juhib kollaseid. **Kahekesi** saab kumbki mängija joonistada korraga oma värvi laeva rada.
-- Alusta lohistamist ootel laevalt ja lõpeta sama värvi dokis. Rada läheb sõrme tõstmisel käiku. Asteroidist tuleb kaarega mööda joonistada. Punane rada hoiatab takistuse, vale doki või teise laevaga võimaliku kokkupõrke eest.
+- Alusta lohistamist ootel laevalt ja lõpeta sama värvi dokis. Rada läheb sõrme tõstmisel käiku. Asteroid liigub aeglaselt sadama keskosas ja selle lilla gravitatsiooniväli tõmbab lähedal lendavaid laevu kursilt kõrvale. Peen joon näitab joonistatud rada, katkendjoon ennustatud trajektoori. Punane joon hoiatab asteroidi, vale doki või teise laevaga võimaliku kokkupõrke eest.
 - Dokkimine annab punkti. Kokkupõrkel kaovad laevad. Võidab mängija, kes 90 sekundiga rohkem laevu dokki toob.
 - [`lennujuht.js`](lennujuht.js) joonistab radari ning seob iga aktiivse puute oma laevaga. [`lennujuht-engine.js`](lennujuht-engine.js) kontrollib marsruute, prognoosib kokkupõrkeid ja juhib arvutivastast. Loogikateste käivitab `node --test lennujuht-engine.test.cjs`.
 

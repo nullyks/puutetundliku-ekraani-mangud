@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  WIDTH, HEIGHT, STEP, SHIP_RADIUS, HIT_RADIUS, MAX_ROUTE_POINTS, DOCKS, ASTEROID,
+  WIDTH, HEIGHT, STEP, SHIP_RADIUS, HIT_RADIUS, MAX_ROUTE_POINTS, DOCKS, ASTEROID, FIELD_RADIUS,
   distance, createMatch, inspectRoute, sendShip, step,
 } = FlightControl;
 
@@ -57,21 +57,36 @@ function makeMap() {
   for (let i = 0; i < 95; i++) pen.fillRect((97 * i + 37) % WIDTH, (283 * i + 71) % HEIGHT, i % 8 ? 1 : 2, i % 8 ? 1 : 2);
   pen.strokeStyle = '#7b99a36b';
   pen.strokeRect(13, 13, WIDTH - 26, HEIGHT - 26);
+  return image;
+}
 
-  pen.strokeStyle = '#6e9a9c45';
-  circle(pen, ASTEROID.x, ASTEROID.y, 108);
+function makeAsteroidArt() {
+  const image = document.createElement('canvas');
+  const center = FIELD_RADIUS + 3;
+  image.width = center * 2;
+  image.height = center * 2;
+  const pen = image.getContext('2d');
+  const glow = pen.createRadialGradient(center, center, ASTEROID.radius, center, center, FIELD_RADIUS);
+  glow.addColorStop(0, '#9e7ad846');
+  glow.addColorStop(1, '#9e7ad804');
+  pen.fillStyle = glow;
+  circle(pen, center, center, FIELD_RADIUS);
+  pen.fill();
+  pen.strokeStyle = '#c2a2eb9c';
+  pen.setLineDash([6, 8]);
   pen.stroke();
-  circle(pen, ASTEROID.x, ASTEROID.y, 152);
+  pen.strokeStyle = '#b695d96a';
+  circle(pen, center, center, 116);
   pen.stroke();
   pen.strokeStyle = '#ff9fa18c';
   pen.setLineDash([6, 6]);
-  circle(pen, ASTEROID.x, ASTEROID.y, ASTEROID.radius + SHIP_RADIUS + 2);
+  circle(pen, center, center, ASTEROID.radius + SHIP_RADIUS + 2);
   pen.stroke();
   pen.setLineDash([]);
 
   const rock = [[-46,-7],[-34,-39],[-8,-53],[25,-47],[46,-31],[54,2],[38,28],[20,48],[-10,52],[-38,32],[-50,10]];
   pen.beginPath();
-  rock.forEach(([x, y], i) => pen[i === 0 ? 'moveTo' : 'lineTo'](ASTEROID.x + x, ASTEROID.y + y));
+  rock.forEach(([x, y], i) => pen[i === 0 ? 'moveTo' : 'lineTo'](center + x, center + y));
   pen.closePath();
   pen.fillStyle = '#4b3b4b';
   pen.fill();
@@ -80,17 +95,18 @@ function makeMap() {
   pen.stroke();
   pen.fillStyle = '#614a58';
   for (const [x, y, radius] of [[-17,-17,13],[22,-5,9],[-6,21,11]]) {
-    circle(pen, ASTEROID.x + x, ASTEROID.y + y, radius);
+    circle(pen, center + x, center + y, radius);
     pen.fill();
   }
   pen.fillStyle = '#e5b3b7';
   pen.textAlign = 'center';
   pen.font = 'bold 12px monospace';
-  pen.fillText('ASTEROID', ASTEROID.x, ASTEROID.y + 104);
+  pen.fillText('ASTEROID', center, center + 94);
   return image;
 }
 
 const map = makeMap();
+const asteroidArt = makeAsteroidArt();
 
 function trace(start, points, from, color, width, dashed = false) {
   brush.lineWidth = width;
@@ -155,30 +171,39 @@ function renderShip(ship, highlighted) {
 
 function render() {
   brush.drawImage(map, 0, 0);
+  const asteroid = match.asteroid;
+  brush.drawImage(asteroidArt, asteroid.x - asteroidArt.width / 2, asteroid.y - asteroidArt.height / 2);
   const selectedShip = match.ships.find((ship) => ship.id === selected);
   const marked = new Set([...drafts.values()].map((draft) => draft.side));
   if (selectedShip) marked.add(selectedShip.side);
   DOCKS.forEach((dock, side) => renderDock(dock, side, marked.has(side)));
 
   for (const ship of match.ships) {
-    if (ship.route) trace(ship, ship.route, ship.next, teamColors[ship.side] + '8f', 2);
+    if (ship.route) {
+      trace(ship.course, ship.route, ship.course.next, teamColors[ship.side] + '8f', 2);
+      if (distance(ship, ship.course) >= 5) trace(ship, [ship.course], 0, teamColors[ship.side] + '82', 1.5, true);
+    }
   }
   for (const draft of drafts.values()) {
     const plan = draft.plan;
-    if (!plan) continue;
-    const warn = plan.blocked || plan.risk || plan.wrongDock;
-    trace(plan.points[0], plan.points, 1, warn ? danger : teamColors[draft.side], 3, true);
-    if (plan.risk) {
+    const color = teamColors[draft.side];
+    trace(draft.origin, draft.points, 0, color + (plan ? '54' : 'bd'), 2);
+    if (plan) {
+      const warn = plan.blocked || plan.risk || plan.wrongDock;
+      trace(plan.trajectory[0], plan.trajectory, 1, warn ? danger : color, 3, true);
+    }
+    const warning = plan?.hazard ?? plan?.risk;
+    if (warning) {
       brush.strokeStyle = danger;
       brush.lineWidth = 2;
-      circle(brush, plan.risk.x, plan.risk.y, 14);
+      circle(brush, warning.x, warning.y, 14);
       brush.stroke();
     }
   }
   const drawing = new Set([...drafts.values()].map((draft) => draft.id));
   for (const ship of match.ships) renderShip(ship, ship.id === selected || drawing.has(ship.id));
   for (const signal of signals) {
-    brush.strokeStyle = signal.type === 'collision' ? danger : teamColors[signal.side];
+    brush.strokeStyle = signal.type === 'docked' ? teamColors[signal.side] : danger;
     brush.globalAlpha = signal.life / .7;
     brush.lineWidth = 2;
     circle(brush, signal.x, signal.y, 52 - signal.life * 55);
@@ -208,7 +233,7 @@ function refreshStatus() {
   if (view === 'playing') {
     const plans = [...drafts.values()].map((draft) => draft.plan).filter(Boolean);
     if (plans.some((plan) => plan.blocked)) {
-      text = 'Asteroid on ees. Joonista rada selle ümbert.';
+      text = 'Trajektoor tabaks asteroidi. Joonista kaugemalt.';
       tone = 'danger';
     } else if (plans.some((plan) => plan.wrongDock)) {
       text = 'Vali laevaga sama värvi dokk.';
@@ -219,6 +244,8 @@ function refreshStatus() {
     } else if (plans.some((plan) => plan.arrives)) {
       text = 'Tõsta sõrm, et laev teele saata.';
       tone = 'ready';
+    } else if (plans.some((plan) => plan.deflected)) {
+      text = 'Gravitatsioon painutab trajektoori.';
     } else if (notice) {
       ({ text, tone } = notice);
     } else {
@@ -284,6 +311,7 @@ function animate(time) {
       for (const event of match.events) {
         signals.push({ ...event, life: .7 });
         if (event.type === 'collision') notify('Kokkupõrge. Mõlemad laevad kadusid.', 'danger');
+        if (event.type === 'asteroid') notify('Laev tabas asteroidi.', 'danger');
       }
       if (match.ended) { finish(); break; }
     }
@@ -291,7 +319,7 @@ function animate(time) {
       timeToForecast -= dt;
       if (timeToForecast <= 0) {
         for (const draft of drafts.values()) draft.plan = inspectRoute(match, draft.id, draft.points);
-        timeToForecast = .18;
+        timeToForecast = .09;
       }
       if (notice && (notice.life -= dt) <= 0) notice = null;
       for (let i = signals.length - 1; i >= 0; i--) if ((signals[i].life -= dt) <= 0) signals.splice(i, 1);
@@ -328,6 +356,7 @@ radar.addEventListener('pointerdown', (event) => {
   selected = ship.id;
   notice = null;
   drafts.set(event.pointerId, { id: ship.id, side: ship.side, origin, down: point, points: [], plan: null });
+  timeToForecast = 0;
   radar.setPointerCapture(event.pointerId);
 });
 
@@ -339,7 +368,6 @@ radar.addEventListener('pointermove', (event) => {
     const point = position(sample);
     if (draft.points.length || distance(draft.down, point) >= 9) collect(draft, point, 7);
   }
-  draft.plan = inspectRoute(match, draft.id, draft.points);
 });
 
 radar.addEventListener('pointerup', (event) => {
@@ -354,7 +382,7 @@ radar.addEventListener('pointerup', (event) => {
   collect(draft, end, .1);
   const plan = inspectRoute(match, draft.id, draft.points);
   if (!plan) notify('Laev on juba liikunud. Vali uus laev.');
-  else if (plan.blocked) notify('Rada läbis asteroidi. Joonista uus rada selle ümbert.', 'danger');
+  else if (plan.blocked) notify('Trajektoor tabaks asteroidi. Joonista kaugemalt.', 'danger');
   else if (!plan.arrives) notify('Lõpeta rada sama värvi dokis.', 'danger');
   else if (sendShip(match, draft.id, draft.points)) {
     if (selected === draft.id) selected = null;

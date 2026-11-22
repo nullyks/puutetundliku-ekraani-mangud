@@ -2,7 +2,10 @@
 
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { ASTEROID, DOCKS, ROUND_TIME, STEP, createMatch, inspectRoute, sendShip, step } = require('./lennujuht-engine.js');
+const {
+  ASTEROID, FIELD_RADIUS, WIDTH, HEIGHT, DOCKS, ROUND_TIME, STEP,
+  createMatch, distance, inspectRoute, sendShip, step,
+} = require('./lennujuht-engine.js');
 
 function run(match, seconds) {
   for (let i = 0; i < Math.round(seconds / STEP); i++) step(match);
@@ -40,6 +43,44 @@ test('a route segment intersects the asteroid even with waypoints outside the ob
   assert.ok(plan.arrives && plan.blocked);
   assert.equal(sendShip(match, ship.id, drawing), false);
   assert.equal(ship.route, null);
+});
+
+test('the asteroid and its field stay away from the edges throughout the round', () => {
+  const match = createMatch('duo');
+  const initial = match.asteroid;
+  for (let frame = 0; frame < ROUND_TIME / STEP; frame++) {
+    const previous = match.asteroid;
+    step(match);
+    const { x, y } = match.asteroid;
+    assert.ok(distance(previous, match.asteroid) < 20 * STEP);
+    assert.ok(Math.min(x, WIDTH - x, y, HEIGHT - y) > FIELD_RADIUS + 20);
+    if (frame === 299) assert.ok(distance(initial, match.asteroid) > 40);
+  }
+});
+
+test('gravity pulls a nearby flight inward and the simulated flight follows its preview', () => {
+  const match = createMatch('duo');
+  const ship = match.ships[0];
+  assert.equal(inspectRoute(match, ship.id, route(0, 45)).deflected, false);
+
+  const drawing = route(0, 145);
+  const plan = inspectRoute(match, ship.id, drawing);
+  assert.ok(plan.deflected && !plan.blocked);
+  assert.ok(sendShip(match, ship.id, drawing));
+  run(match, 2);
+  assert.ok(ship.y > 150);
+  assert.ok(distance(ship, plan.trajectory[24]) < 1e-8);
+  run(match, 6);
+  assert.equal(match.scores[0], 1);
+});
+
+test('arrival time changes whether the same drawn route would hit the asteroid', () => {
+  const match = createMatch('duo');
+  const ship = match.ships[0];
+  const drawing = route(0, 170);
+  assert.ok(inspectRoute(match, ship.id, drawing).hazard);
+  run(match, 5);
+  assert.equal(inspectRoute(match, ship.id, drawing).hazard, null);
 });
 
 test('a route inside the correct dock snaps to its center and scores only on arrival', () => {
