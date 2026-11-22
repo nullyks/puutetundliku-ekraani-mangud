@@ -6,6 +6,7 @@ const AirHockey = (() => {
   const STEP = 1 / 120;
   const WIN_SCORE = 7;
   const RAIL = 22;
+  const CORNER_RADIUS = 100;
   const GOAL_TOP = 150;
   const GOAL_BOTTOM = 330;
   const POST_RADIUS = 6;
@@ -14,6 +15,7 @@ const AirHockey = (() => {
   const MAX_PUCK_SPEED = 1230;
   const SERVE_DELAY = .85;
   const CENTER = WIDTH / 2;
+  const CORNER_CENTER = RAIL + CORNER_RADIUS;
 
   const clamp = (value, low, high) => Math.min(high, Math.max(low, value));
 
@@ -35,6 +37,24 @@ const AirHockey = (() => {
     return match;
   }
 
+  function constrainCorner(position, radius) {
+    const centerX = clamp(position.x, CORNER_CENTER, WIDTH - CORNER_CENTER);
+    const centerY = clamp(position.y, CORNER_CENTER, HEIGHT - CORNER_CENTER);
+    const dx = position.x - centerX;
+    const dy = position.y - centerY;
+    if (dx === 0 || dy === 0) return null;
+
+    const limit = CORNER_RADIUS - radius;
+    const distance = Math.hypot(dx, dy);
+    if (distance <= limit) return null;
+
+    const nx = dx / distance;
+    const ny = dy / distance;
+    position.x = centerX + nx * limit;
+    position.y = centerY + ny * limit;
+    return { nx, ny };
+  }
+
   function moveMallet(mallet, side, target, speed, dt) {
     mallet.vx = 0;
     mallet.vy = 0;
@@ -42,8 +62,10 @@ const AirHockey = (() => {
     const edge = RAIL + MALLET_RADIUS;
     const left = side === 0 ? edge : CENTER + MALLET_RADIUS;
     const right = side === 0 ? CENTER - MALLET_RADIUS : WIDTH - edge;
-    const dx = clamp(target.x, left, right) - mallet.x;
-    const dy = clamp(target.y, edge, HEIGHT - edge) - mallet.y;
+    const bounded = { x: clamp(target.x, left, right), y: clamp(target.y, edge, HEIGHT - edge) };
+    constrainCorner(bounded, MALLET_RADIUS);
+    const dx = bounded.x - mallet.x;
+    const dy = bounded.y - mallet.y;
     const distance = Math.hypot(dx, dy);
     if (distance === 0) return;
     const portion = Math.min(1, speed * dt / distance);
@@ -114,8 +136,38 @@ const AirHockey = (() => {
     resetFaceoff(match, 1 - scorer, scorer);
   }
 
+  function releaseCornerPin(puck, mallet, nx, ny) {
+    const dx = puck.x - mallet.x;
+    const dy = puck.y - mallet.y;
+    if (Math.hypot(dx, dy) >= MALLET_RADIUS + PUCK_RADIUS - .01) return;
+
+    // A puck squeezed between the mallet and the rail can escape along the arc.
+    const tx = -ny;
+    const ty = nx;
+    const tangentOffset = dx * tx + dy * ty;
+    const tangentSpeed = puck.vx * tx + puck.vy * ty;
+    const direction = Math.abs(tangentOffset) > .01
+      ? Math.sign(tangentOffset)
+      : Math.sign((CENTER - puck.x) * tx);
+    const change = direction * Math.max(180, Math.abs(tangentSpeed)) - tangentSpeed;
+    puck.vx += change * tx;
+    puck.vy += change * ty;
+  }
+
   function collideRink(match) {
     const puck = match.puck;
+    const corner = constrainCorner(puck, PUCK_RADIUS);
+    if (corner) {
+      const { nx, ny } = corner;
+      const outward = puck.vx * nx + puck.vy * ny;
+      if (outward > 0) {
+        puck.vx -= 1.94 * outward * nx;
+        puck.vy -= 1.94 * outward * ny;
+      }
+      releaseCornerPin(puck, match.mallets[puck.x < CENTER ? 0 : 1], nx, ny);
+      return;
+    }
+
     const inset = RAIL + PUCK_RADIUS;
     if (puck.y < inset || puck.y > HEIGHT - inset) {
       puck.vy = (puck.y < inset ? 1 : -1) * Math.abs(puck.vy) * .94;
@@ -166,7 +218,7 @@ const AirHockey = (() => {
     movePuck(match, dt);
   }
 
-  return { WIDTH, HEIGHT, STEP, WIN_SCORE, RAIL, GOAL_TOP, GOAL_BOTTOM, POST_RADIUS, MALLET_RADIUS, PUCK_RADIUS, createMatch, step };
+  return { WIDTH, HEIGHT, STEP, WIN_SCORE, RAIL, CORNER_RADIUS, GOAL_TOP, GOAL_BOTTOM, POST_RADIUS, MALLET_RADIUS, PUCK_RADIUS, createMatch, step };
 })();
 
 if (typeof module !== 'undefined') module.exports = AirHockey;

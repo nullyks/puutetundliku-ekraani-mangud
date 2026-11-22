@@ -3,7 +3,7 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const {
-  WIDTH, HEIGHT, RAIL, GOAL_TOP, MALLET_RADIUS, PUCK_RADIUS, WIN_SCORE, createMatch, step,
+  WIDTH, HEIGHT, RAIL, CORNER_RADIUS, GOAL_TOP, MALLET_RADIUS, PUCK_RADIUS, WIN_SCORE, createMatch, step,
 } = require('./air-hockey-engine.js');
 
 function runSteps(match, count, targets = [null, null]) {
@@ -51,13 +51,51 @@ test('a moving mallet transfers momentum to a stationary puck', () => {
 test('closed rails and a goal post deflect shots without scoring', () => {
   const cases = [
     { puck: { x: 300, y: RAIL + PUCK_RADIUS + 2, vx: 90, vy: -700 }, axis: 'vy' },
-    { puck: { x: RAIL + PUCK_RADIUS + 2, y: 80, vx: -700, vy: 0 }, axis: 'vx' },
+    { puck: { x: RAIL + PUCK_RADIUS + 2, y: 130, vx: -700, vy: 0 }, axis: 'vx' },
     { puck: { x: RAIL + PUCK_RADIUS + 2, y: GOAL_TOP + PUCK_RADIUS, vx: -950, vy: 0 }, axis: 'vy' },
   ];
   for (const { puck, axis } of cases) {
     const match = playingWith(puck);
     step(match, [null, null]);
     assert.ok(match.puck[axis] > 0);
+    assert.deepEqual(match.scores, [0, 0]);
+  }
+});
+
+function corners() {
+  const near = RAIL + CORNER_RADIUS;
+  return [
+    [near, near, -1, -1], [WIDTH - near, near, 1, -1],
+    [near, HEIGHT - near, -1, 1], [WIDTH - near, HEIGHT - near, 1, 1],
+  ];
+}
+
+test('all four corner arcs redirect the puck into the rink', () => {
+  const limit = CORNER_RADIUS - PUCK_RADIUS;
+  for (const [cx, cy, sx, sy] of corners()) {
+    const match = playingWith({ x: cx + sx * (limit - 2) * .8, y: cy + sy * (limit - 2) * .6, vx: sx * 730, vy: 0 });
+    step(match, [null, null]);
+    const { x, y, vx, vy } = match.puck;
+    assert.ok(Math.hypot(x - cx, y - cy) <= limit + 1e-8);
+    assert.ok(vx * sx < 0 && vy * sy < 0);
+    assert.deepEqual(match.scores, [0, 0]);
+  }
+});
+
+test('the puck escapes when a mallet is held against a rounded corner', () => {
+  for (const [cx, cy, sx, sy] of corners()) {
+    const edge = (CORNER_RADIUS - PUCK_RADIUS) / Math.SQRT2;
+    const x = cx + sx * edge;
+    const y = cy + sy * edge;
+    const match = playingWith({ x, y, vx: 0, vy: 0 });
+    const side = sx < 0 ? 0 : 1;
+    Object.assign(match.mallets[side], { x: cx - sx * 48, y: cy - sy * 48 });
+    const targets = [null, null];
+    targets[side] = { x: sx < 0 ? 0 : WIDTH, y: sy < 0 ? 0 : HEIGHT };
+    runSteps(match, 90, targets);
+    const mallet = match.mallets[side];
+    assert.ok(Math.hypot(mallet.x - cx, mallet.y - cy) <= CORNER_RADIUS - MALLET_RADIUS + 1e-8);
+    assert.ok(Math.hypot(match.puck.x - x, match.puck.y - y) > MALLET_RADIUS + PUCK_RADIUS);
     assert.deepEqual(match.scores, [0, 0]);
   }
 });

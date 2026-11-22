@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  WIDTH, HEIGHT, STEP, RAIL, GOAL_TOP, GOAL_BOTTOM, POST_RADIUS, MALLET_RADIUS, PUCK_RADIUS,
+  WIDTH, HEIGHT, STEP, RAIL, CORNER_RADIUS, GOAL_TOP, GOAL_BOTTOM, POST_RADIUS, MALLET_RADIUS, PUCK_RADIUS,
   createMatch, step,
 } = AirHockey;
 
@@ -46,6 +46,14 @@ function ring(pen, x, y, radius) {
 function buildRink() {
   const image = layer(WIDTH, HEIGHT);
   const pen = image.getContext('2d');
+  const right = WIDTH - RAIL;
+  const bottom = HEIGHT - RAIL;
+  const inside = new Path2D();
+  inside.roundRect(RAIL, RAIL, WIDTH - 2 * RAIL, HEIGHT - 2 * RAIL, CORNER_RADIUS);
+  pen.fillStyle = '#0b0c1a';
+  pen.fillRect(0, 0, WIDTH, HEIGHT);
+  pen.save();
+  pen.clip(inside);
   const floor = pen.createLinearGradient(0, 0, WIDTH, 0);
   floor.addColorStop(0, '#102e3b');
   floor.addColorStop(.46, '#15162b');
@@ -73,13 +81,23 @@ function buildRink() {
   pen.lineTo(WIDTH / 2, HEIGHT - RAIL);
   pen.stroke();
   pen.setLineDash([]);
+  pen.restore();
 
-  pen.strokeStyle = '#71628c';
+  const railColor = pen.createLinearGradient(RAIL, 0, right, 0);
+  railColor.addColorStop(0, '#51f8ed91');
+  railColor.addColorStop(.5, '#a482cc91');
+  railColor.addColorStop(1, '#ff6bc991');
+  pen.strokeStyle = railColor;
+  pen.lineWidth = 2;
   pen.beginPath();
-  pen.moveTo(RAIL, RAIL);
-  pen.lineTo(WIDTH - RAIL, RAIL);
-  pen.moveTo(RAIL, HEIGHT - RAIL);
-  pen.lineTo(WIDTH - RAIL, HEIGHT - RAIL);
+  pen.moveTo(RAIL, GOAL_TOP);
+  pen.arcTo(RAIL, RAIL, right, RAIL, CORNER_RADIUS);
+  pen.arcTo(right, RAIL, right, GOAL_TOP, CORNER_RADIUS);
+  pen.lineTo(right, GOAL_TOP);
+  pen.moveTo(RAIL, GOAL_BOTTOM);
+  pen.arcTo(RAIL, bottom, right, bottom, CORNER_RADIUS);
+  pen.arcTo(right, bottom, right, GOAL_BOTTOM, CORNER_RADIUS);
+  pen.lineTo(right, GOAL_BOTTOM);
   pen.stroke();
 
   for (const [side, color] of colors.entries()) {
@@ -91,16 +109,14 @@ function buildRink() {
     pen.strokeStyle = color + '70';
     pen.lineWidth = 2;
     pen.beginPath();
-    pen.moveTo(wall, RAIL);
-    pen.lineTo(wall, GOAL_TOP);
-    pen.moveTo(wall, GOAL_BOTTOM);
-    pen.lineTo(wall, HEIGHT - RAIL);
     for (let y = GOAL_TOP + 12; y < GOAL_BOTTOM; y += 12) {
       pen.moveTo(goalX, y);
       pen.lineTo(goalX + RAIL, y);
     }
     pen.stroke();
 
+    pen.save();
+    pen.clip(inside);
     pen.strokeStyle = color + '48';
     ring(pen, wall, centerY, 120);
     pen.stroke();
@@ -111,6 +127,7 @@ function buildRink() {
       pen.fillStyle = color + '75';
       pen.fillRect(x - 2, y - 2, 4, 4);
     }
+    pen.restore();
 
     pen.fillStyle = color;
     for (const y of [GOAL_TOP, GOAL_BOTTOM]) {
@@ -118,7 +135,7 @@ function buildRink() {
       pen.fill();
     }
     for (let i = 0; i < 9; i++) {
-      const x = wall + direction * (12 + 13 * i);
+      const x = wall + direction * (CORNER_RADIUS + 12 + 13 * i);
       pen.fillRect(x - 3, 10, 7, 2);
       pen.fillRect(x - 3, HEIGHT - 12, 7, 2);
     }

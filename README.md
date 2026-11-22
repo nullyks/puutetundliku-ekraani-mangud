@@ -26,7 +26,7 @@ Pongi avab `index.html`, õhuhoki avab `air-hockey.html`. Mõlemal lehel saab va
 ## Õhuhoki
 
 - **Üksinda** juhid vasakut löögiketast ja arvuti juhib paremat. **Kahekesi** juhib kumbki mängija ketast oma väljakupoolel. Lohista sõrme nii piki- kui ka põikisuunas. Löögiketas jääb oma poolele ka siis, kui sõrm liigub üle keskjoone.
-- Löögiketta kiirus ja suund mõjutavad litri põrget. Punkt läheb kirja siis, kui litter läbib väravaava. Võidab esimene, kes lööb **7 väravat**.
+- Löögiketta kiirus ja suund mõjutavad litri põrget. Ümardatud poordinurgad suunavad litri väljakule tagasi. Punkt läheb kirja siis, kui litter läbib väravaava. Võidab esimene, kes lööb **7 väravat**.
 - Klaviatuuril on vasaku mängija klahvid `WASD` ja paremal nooleklahvid. Üksikmängus sobivad mõlemad klahvikomplektid. Kasuta **Paus** nuppu või `Esc` klahvi ning ava täisekraan nupuga `⛶` või `F11` klahviga.
 - Väljaku ja menüü kood on failides `air-hockey.html`, `air-hockey.css` ja `air-hockey.js`. Füüsika ja arvutivastane on failis `air-hockey-engine.js`. Mõlema mängu loogikateste käivitab `node --test`.
 
