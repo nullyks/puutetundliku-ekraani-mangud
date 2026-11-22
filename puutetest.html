@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="et">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Ekraani puutetest</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      color: #edf5ff;
+      background: #101927;
+      font: 18px system-ui, sans-serif;
+      user-select: none;
+    }
+    main {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      touch-action: none;
+      border: 2px solid #536a81;
+      background: linear-gradient(90deg, #1a2a3d 15%, transparent 15% 85%, #1a2a3d 85%);
+    }
+    header {
+      position: absolute;
+      inset: 18px 12px auto;
+      padding: 0 clamp(0px, 12vw, 130px);
+      text-align: center;
+      pointer-events: none;
+    }
+    h1 { margin: 0 0 8px; font-size: clamp(24px, 5vw, 34px); }
+    p { margin: 8px 0; }
+    .hint { color: #c4d2e0; }
+    .point {
+      position: fixed;
+      transform: translate(-50%, -50%);
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border: 3px solid white;
+      border-radius: 50%;
+      background: var(--color);
+      color: #101927;
+      font-weight: bold;
+      pointer-events: none;
+    }
+    #cursor { --color: #c4d2e0; }
+    #cursor[hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <main id="surface">
+    <header>
+      <h1>Ekraani puutetest</h1>
+      <p><strong>Aktiivseid puuteid <span id="active">0</span></strong> · Suurim korraga <span id="peak">0</span></p>
+      <p>Viimane sisend <strong id="last-input">—</strong></p>
+      <p class="hint">Puuduta korraga vasakut ja paremat serva. Liiguta sõrmi ning tõsta üks sõrm üles.</p>
+    </header>
+    <div id="pointer-points" aria-hidden="true"></div>
+    <div id="touch-points" aria-hidden="true" hidden></div>
+    <span id="cursor" class="point" aria-hidden="true" hidden></span>
+  </main>
+  <script>
+    const surface = document.querySelector('#surface');
+    const activeCount = document.querySelector('#active');
+    const peakCount = document.querySelector('#peak');
+    const lastInput = document.querySelector('#last-input');
+    const cursor = document.querySelector('#cursor');
+    const pointerLayer = document.querySelector('#pointer-points');
+    const touchLayer = document.querySelector('#touch-points');
+    const pointerPoints = new Map();
+    const touchPoints = new Map();
+    const colors = ['#52d7ff', '#ffd166', '#ff84b7', '#8ee99c'];
+    let peak = 0;
+    let cursorSeen = false;
+
+    function updateCounts() {
+      const active = Math.max(pointerPoints.size, touchPoints.size);
+      const showTouchEvents = touchPoints.size > pointerPoints.size;
+      pointerLayer.hidden = showTouchEvents;
+      touchLayer.hidden = !showTouchEvents;
+      cursor.hidden = active > 0 || !cursorSeen;
+      peak = Math.max(peak, active);
+      activeCount.textContent = active;
+      peakCount.textContent = peak;
+    }
+
+    function movePoint(point, coordinates) {
+      point.style.left = `${coordinates.clientX}px`;
+      point.style.top = `${coordinates.clientY}px`;
+    }
+
+    function drawPoint(points, layer, id, coordinates) {
+      let point = points.get(id);
+      if (!point) {
+        const usedColors = new Set(Array.from(points.values(), (item) => item.dataset.color));
+        const color = colors.find((candidate) => !usedColors.has(candidate)) ?? colors[0];
+        point = document.createElement('span');
+        point.className = 'point';
+        point.dataset.color = color;
+        point.style.setProperty('--color', color);
+        point.textContent = id;
+        points.set(id, point);
+        layer.append(point);
+      }
+      movePoint(point, coordinates);
+    }
+
+    function removePoint(points, id) {
+      points.get(id)?.remove();
+      points.delete(id);
+    }
+
+    function showCursor(event) {
+      const type = event.pointerType || 'tundmatu';
+      lastInput.textContent = type;
+      cursor.textContent = type === 'mouse' ? 'hiir' : type;
+      cursorSeen = true;
+      movePoint(cursor, event);
+      updateCounts();
+    }
+
+    surface.addEventListener('pointerdown', (event) => {
+      if (event.pointerType !== 'touch') {
+        showCursor(event);
+        return;
+      }
+      lastInput.textContent = 'touch';
+      cursorSeen = false;
+      drawPoint(pointerPoints, pointerLayer, event.pointerId, event);
+      surface.setPointerCapture(event.pointerId);
+      updateCounts();
+    });
+
+    surface.addEventListener('pointermove', (event) => {
+      if (event.pointerType !== 'touch') {
+        if (pointerPoints.size === 0 && touchPoints.size === 0) showCursor(event);
+        return;
+      }
+      const point = pointerPoints.get(event.pointerId);
+      if (point) movePoint(point, event);
+    });
+
+    function endPointer(event) {
+      if (!pointerPoints.has(event.pointerId)) return;
+      removePoint(pointerPoints, event.pointerId);
+      updateCounts();
+    }
+
+    function updateTouches(event) {
+      const activeIds = new Set(Array.from(event.touches, (touch) => touch.identifier));
+      for (const id of touchPoints.keys()) {
+        if (!activeIds.has(id)) removePoint(touchPoints, id);
+      }
+      for (const touch of event.touches) {
+        drawPoint(touchPoints, touchLayer, touch.identifier, touch);
+      }
+      lastInput.textContent = 'touch';
+      cursorSeen = false;
+      updateCounts();
+    }
+
+    surface.addEventListener('pointerup', endPointer);
+    surface.addEventListener('pointercancel', endPointer);
+    surface.addEventListener('lostpointercapture', endPointer);
+    for (const type of ['touchstart', 'touchmove', 'touchend', 'touchcancel']) {
+      surface.addEventListener(type, updateTouches, { passive: true });
+    }
+    surface.addEventListener('contextmenu', (event) => event.preventDefault());
+    window.addEventListener('blur', () => {
+      pointerLayer.replaceChildren();
+      touchLayer.replaceChildren();
+      pointerPoints.clear();
+      touchPoints.clear();
+      cursorSeen = false;
+      updateCounts();
+    });
+  </script>
+</body>
+</html>
