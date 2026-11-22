@@ -19,6 +19,20 @@ Vali [mängude avalehelt](../index.html) **Lennujuht** või ava [`lennujuht.html
 - Dokkimine annab ühe punkti. Võidab mängija, kes toob **90 sekundi** jooksul rohkem laevu dokki. Võrdsete punktide korral on tulemuseks viik.
 - **Paus** või `Esc` peatab mängu. Pausimenüüst saab jätkata või naasta režiimivalikusse. Pärast vooru saab sama režiimiga uuesti alustada. Täisekraani avab `⛶` või `F11`. **Mängud** viib avalehele.
 
+## Ekraanipildid
+
+![Lennujuhi radar kahe korraga joonistatava marsruudiga, roheline trajektoor kõverdub asteroidi poole](pildid/lennujuht-kaks-marsruuti.png)
+
+*Kahe mängijaga voorus joonistavad mõlemad mängijad korraga. Lilla gravitatsioonivälja lähedal kaldub katkendjoon joonistatud rajast kõrvale.*
+
+![Lennujuhi radar punase trajektoori ja asteroidi tabamise hoiatusega](pildid/lennujuht-asteroidihoiatus.png)
+
+*Üksikmängus viib joonistatud rada asteroidi poole. Punane ring märgib prognoositud kokkupõrkekohta.*
+
+![Lennujuhi dokk A pärast rohelise laeva saabumist, punktiseis 1–0](pildid/lennujuht-dokkimine.png)
+
+*Roheline laev jõudis dokki A. Doki ümber ilmub ring ja rohelise mängija skoor suureneb ühe võrra.*
+
 ## Arendus ja failid
 
 Lennujuhi mitmikpuude võimaldab joonistada ja kinnitada iga sõrmega eraldi marsruudi. Brauser hoiab joonistatavaid radu `pointerId` järgi lahus. Mootor kontrollib dokki, ennustab kokkupõrkeid ja valib arvutivastasele sobiva lennukoridori. [Esimene demoversioon](https://github.com/nullyks/puutetundliku-ekraani-mangud/commit/cf6dbe0)

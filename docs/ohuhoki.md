@@ -17,6 +17,20 @@ Vali [mängude avalehelt](../index.html) **Õhuhoki** või ava [`air-hockey.html
 - Litter põrkab poordilt ja väravapostidelt. Värav läheb kirja, kui litter on tervenisti väravajoone ületanud. Järgmine serv suundub värava sisse lasknud mängija poole. Võidab esimene mängija, kes lööb **7 väravat**.
 - **Paus** või `Esc` peatab mängu. Pausimenüüst saab jätkata või naasta režiimivalikusse. **Uus mäng** alustab sama režiimiga uuesti. Täisekraani avab `⛶` või `F11`. **Mängud** viib avalehele.
 
+## Ekraanipildid
+
+![Õhuhoki litter põrkamas vasakust ülemisest ümarnurgast kahe mängija voorus](pildid/ohuhoki-nurgaporge.png)
+
+*Litter põrkab vasakust ülemisest nurgast tagasi väljakule. Helendav jälg näitab litri liikumissuunda.*
+
+![Õhuhoki pärast väravat, punktiseis 01–00 ja litter keskel uueks serviks](pildid/ohuhoki-varav.png)
+
+*Värav arvutivastase vastu. Litter on tagasi keskel ja järgmine serv läheb roosa löögiketta poole.*
+
+![Õhuhoki pausimenüü valikutega Jätka ja Menüüsse](pildid/ohuhoki-paus.png)
+
+*Paus peatab litri ja löögiketaste liikumise. Jätkamisel taastub sama mänguseis.*
+
 ## Arendus ja failid
 
 Pongi ühe telje juhtimisele lisasime teise telje ja kiirusest sõltuva löögi. Füüsika töötab 1/120 sekundi sammuga. Arvuti kaitseb väravat, kui litter liigub kiiresti tema poole, ja otsib löögiasendit, kui litter on tema väljakupoolel. [Esimene demoversioon](https://github.com/nullyks/puutetundliku-ekraani-mangud/commit/8dfa336)

@@ -10,6 +10,10 @@ Kolm veebimängu Raspberry Pi 400 ja 7-tollise puuteekraani jaoks. Kõigis saab 
 | Õhuhoki | Liiguta löögikettaid kahel teljel ja suuna litrit löögi kiiruse ning suunaga. | [Õhuhoki juhend](docs/ohuhoki.md) |
 | Lennujuht | Joonista korraga kahele laevale marsruut ja jälgi gravitatsioonist kõverduvat trajektoori. | [Lennujuhi juhend](docs/lennujuht.md) |
 
+![Mängude avaleht kolme valikuga: Pong, Õhuhoki ja Lennujuht](docs/pildid/avaleht.png)
+
+Avaleht ja mängujuhendite ekraanipildid on jäädvustatud Raspberry Pi 400 Chromiumis 1024 × 600 vaates.
+
 ## Alusta Raspberry Pi-s
 
 1. Ühenda pilt HDMI kaudu ja puude ekraani andmesidet toetava USB-kaabli kaudu. Kui ekraan on juba ühendatud, võid kohe mängud alla laadida.

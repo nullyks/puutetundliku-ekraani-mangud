@@ -17,6 +17,20 @@ Vali [mängude avalehelt](../index.html) **Pong** või ava [`pong.html`](../pong
 - Pall põrkab üla- ja alaservast ning reketitelt. Kui pall väljub vastase väljakuotsast, saad punkti ja järgneb uus serv. Võidab esimene mängija, kes kogub **7 punkti**.
 - **Paus** või `Esc` peatab mängu. Pausimenüüst saab jätkata või naasta režiimivalikusse. Pärast vooru saab sama režiimiga uuesti alustada. Täisekraani avab `⛶` või `F11`. **Mängud** viib avalehele.
 
+## Ekraanipildid
+
+![Pongi režiimivalik nuppudega Üksinda ja Kahekesi](pildid/pong-menuu.png)
+
+*Avamenüüst saab valida vastaseks arvuti või teise mängija.*
+
+![Pongi pallivahetus kahe mängija režiimis, reketid väljaku vastasotstes](pildid/pong-pallivahetus.png)
+
+*Pallivahetus kahe mängija režiimis. Kumbki mängija liigutab oma reketit üles ja alla.*
+
+![Pongi võiduvaade tulemusega 7–3 arvuti vastu](pildid/pong-voiduvaade.png)
+
+*Seitsmes punkt lõpetab mängu. Võiduvaatest saab alustada uut mängu või naasta režiimivalikusse.*
+
 ## Arendus ja failid
 
 Esimeseks demoks valisime Pongi, sest reket liigub ühel teljel ja mõlema mängija sõrm mahub oma ekraanipoolele. Enne mängu ehitamist viisime läbi kahe kontakti katse. Selle käigus lahendasime labwc hiireemulatsiooni probleemi. [Seadmekatse ja lahendus](puuteekraan.md#3-luba-mitmikpuude-labwc-s)
