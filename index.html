@@ -4,68 +4,44 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>Pong</title>
-  <link rel="stylesheet" href="pong.css">
-  <script defer src="pong-engine.js"></script>
-  <script defer src="pong.js"></script>
+  <title>Mängud</title>
+  <link rel="stylesheet" href="games.css">
 </head>
 <body>
-  <main class="console">
-    <header class="topbar">
-      <div class="game-nav">
-        <div class="mode" id="mode-label" aria-live="polite">Vali mänguviis</div>
-        <a class="switch-game" href="air-hockey.html">Õhuhoki ›</a>
-      </div>
-      <div class="scoreboard" aria-label="Punktiseis" aria-live="polite">
-        <div class="score left"><span id="left-label">Vasak</span><strong id="left-score">0</strong></div>
-        <span class="score-divider" aria-hidden="true">:</span>
-        <div class="score right"><strong id="right-score">0</strong><span id="right-label">Parem</span></div>
-      </div>
-      <div class="actions">
-        <button id="pause" type="button" disabled>Paus</button>
-        <button id="fullscreen" type="button" aria-label="Täisekraan" title="Täisekraan">⛶</button>
-      </div>
+  <main class="library">
+    <header>
+      <h1>Mängud</h1>
+      <p>Arvuti vastu või kahekesi samal ekraanil.</p>
     </header>
 
-    <section class="court" aria-label="Pongi mänguväljak">
-      <canvas id="court" width="960" height="480" aria-label="Pall ja kaks reketit"></canvas>
-      <div class="overlay" id="menu">
-        <div class="panel">
-          <h1 class="game-title">PONG</h1>
-          <p>Esimesena 7 punktini.</p>
-          <div class="choices">
-            <button type="button" class="choice primary" id="solo">Üksinda<span>Arvuti vastu</span></button>
-            <button type="button" class="choice secondary" id="duo">Kahekesi<span>Samal ekraanil</span></button>
+    <nav class="game-list" aria-label="Vali mäng">
+      <a class="game-card pong" href="pong.html">
+        <div class="preview" aria-hidden="true">
+          <div class="field">
+            <span class="piece left"></span>
+            <span class="piece right"></span>
+            <span class="ball"></span>
           </div>
         </div>
-      </div>
-      <div class="overlay" id="paused" hidden>
-        <div class="panel compact">
-          <h2>Paus</h2>
-          <div class="choices">
-            <button type="button" class="choice primary" id="resume">Jätka</button>
-            <button type="button" class="choice secondary" id="pause-menu">Menüüsse</button>
+        <div class="card-label">
+          <h2>Pong</h2>
+          <span class="arrow" aria-hidden="true">→</span>
+        </div>
+      </a>
+      <a class="game-card hockey" href="air-hockey.html">
+        <div class="preview" aria-hidden="true">
+          <div class="field">
+            <span class="piece left"></span>
+            <span class="piece right"></span>
+            <span class="ball"></span>
           </div>
         </div>
-      </div>
-      <div class="overlay" id="finished" hidden>
-        <div class="panel compact">
-          <h2 id="winner"></h2>
-          <div class="choices">
-            <button type="button" class="choice primary" id="replay">Uus mäng</button>
-            <button type="button" class="choice secondary" id="end-menu">Menüüsse</button>
-          </div>
+        <div class="card-label">
+          <h2>Õhuhoki</h2>
+          <span class="arrow" aria-hidden="true">→</span>
         </div>
-      </div>
-      <div id="serve-note" class="serve-note" hidden>Serv</div>
-    </section>
-
-    <footer class="controls">
-      <span>Lohista sõrme omal väljakupoolel.</span>
-      <span id="duo-keys">Vasak <kbd>W</kbd> <kbd>S</kbd> · parem <kbd>↑</kbd> <kbd>↓</kbd></span>
-      <span id="solo-keys" hidden><kbd>W</kbd> <kbd>S</kbd> või <kbd>↑</kbd> <kbd>↓</kbd></span>
-    </footer>
-    <noscript>Pongi mängimiseks luba brauseris JavaScript.</noscript>
+      </a>
+    </nav>
   </main>
 </body>
 </html>

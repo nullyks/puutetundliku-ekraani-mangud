@@ -142,7 +142,7 @@ canvas {
 .switch-game {
   display: inline-grid;
   place-items: center;
-  min-height: 30px;
+  min-height: 44px;
   color: var(--paper);
   font-size: .76rem;
   white-space: nowrap;
@@ -187,5 +187,5 @@ kbd { color: var(--paper); font: inherit; font-weight: 700; }
   .panel p { margin: 7px 0 10px; }
   .choice { padding-block: 6px; }
   .choices { gap: 8px; }
-  .switch-game { min-height: 24px; font-size: .69rem; }
+  .switch-game { font-size: .69rem; }
 }

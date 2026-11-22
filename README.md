@@ -21,13 +21,15 @@ Kui repo on juba olemas, tõmba mängu värske versioon järgmise käsuga. Kui m
 git -C ~/puutetundliku-ekraani-mangud pull --ff-only
 ```
 
-Pongi avab `index.html`, õhuhoki avab `air-hockey.html`. Mõlemal lehel saab valida ka teise mängu. Pärast failide allalaadimist piisab mängimiseks Chromiumist ja internetiühendust pole vaja. Pi arenduskatses oli kasutusel Raspberry Pi OS Desktop (Debian 13 Trixie), Waylandi töölaud labwc-ga ja Chromium 154.
+Ühine mänguvalik on failis [`index.html`](index.html). Avalehelt saab avada [Pongi](pong.html) või [Õhuhoki](air-hockey.html). Nupp **Mängud** viib mõlema mängu ülaservast avalehele ka pausi ajal ja pärast mängu lõppu. Pärast failide allalaadimist piisab mängimiseks Chromiumist ja internetiühendust pole vaja. Pi arenduskatses oli kasutusel Raspberry Pi OS Desktop (Debian 13 Trixie), Waylandi töölaud labwc-ga ja Chromium 154.
+
+Iga uus mäng saab oma HTML-lehe. Lisa selle link `index.html` mänguvalikusse ja lisa mängulehele samasse kohta **Mängud** link tagasi `index.html`-ile. Avalehe kujundus on failis [`games.css`](games.css).
 
 ## Õhuhoki
 
 ### Käivitamine ja mängimine
 
-Vali Pongi lehel **Õhuhoki** või käivita Pi terminalis järgmised käsud.
+Vali avalehelt **Õhuhoki** või käivita Pi terminalis järgmised käsud.
 
 ```bash
 cd ~/puutetundliku-ekraani-mangud
@@ -73,6 +75,8 @@ Pärast mängu uuendamist kontrolli Pi enda puuteekraanil neid olukordi.
 
 ## Pongi mängujuhend
 
+Vali avalehelt **Pong** või ava `pong.html` otse Chromiumis.
+
 | Režiim | Puutega | Klaviatuuriga |
 | --- | --- | --- |
 | **Üksinda** | Lohista sõrme väljaku vasakul poolel. Oranži reketit juhib arvuti. | Vasakut reketit juhivad `W` ja `S` või `↑` ja `↓`. |
@@ -95,7 +99,7 @@ Pärast mängu uuendamist kontrolli Pi enda puuteekraanil neid olukordi.
 
 | Fail | Ülesanne |
 | --- | --- |
-| [`index.html`](index.html), [`pong.css`](pong.css) | Mängu leht, menüüd, punktiseis ja retrostiilis kujundus. |
+| [`pong.html`](pong.html), [`pong.css`](pong.css) | Mängu leht, menüüd, punktiseis ja retrostiilis kujundus. |
 | [`pong.js`](pong.js) | Canvas-väljaku joonistamine, puute- ja klaviatuurisisend, paus ning mängurežiimide vahetamine. |
 | [`pong-engine.js`](pong-engine.js) | Serv, palli ja reketite liikumine, põrked, punktid ning arvutivastane. |
 | [`pong-engine.test.cjs`](pong-engine.test.cjs) | Mänguloogika automaattestid. |
