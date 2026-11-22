@@ -112,6 +112,24 @@ header p { margin: 9px 0 0; color: #cac7d5; font-size: clamp(.86rem, 2vw, 1rem);
 .hockey .piece.right { right: 16%; border-color: #ff6bc9; box-shadow: 0 0 14px #ff6bc987, inset 0 0 8px #ff6bc950; }
 .hockey .ball { z-index: 1; top: 61%; height: 10%; aspect-ratio: 1; border-radius: 50%; background: #e9ff91; box-shadow: 0 0 8px #e9ff9180; }
 
+.flight { --accent: #affe96; }
+.flight .preview { background-color: #10242d; }
+.flight .field { border: 1px solid #52717c; border-radius: 6px; }
+.flight .field::before { display: none; }
+.flight .piece { top: 38%; height: 28%; aspect-ratio: 1; border: 1px solid #affe96; border-radius: 50%; box-shadow: 0 0 8px #affe9650; }
+.flight .piece.right { border-color: #ffce75; box-shadow: 0 0 8px #ffce7550; }
+.flight-route {
+  position: absolute;
+  top: 17%;
+  left: 19%;
+  width: 51%;
+  height: 30%;
+  border-top: 1px dashed #affe96;
+  border-left: 1px dashed #affe96;
+  border-top-left-radius: 14px;
+}
+.flight .ball { top: 11%; left: 69%; width: 9%; aspect-ratio: 1; background: #affe96; clip-path: polygon(0 50%, 93% 4%, 65% 50%, 93% 96%); }
+
 @media (max-height: 500px) and (min-width: 600px) {
   body { padding-block: 14px; }
   .library header { margin-bottom: 16px; }

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="et">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Lennujuht</title>
+  <link rel="stylesheet" href="lennujuht.css">
+  <script defer src="lennujuht-engine.js"></script>
+  <script defer src="lennujuht.js"></script>
+</head>
+<body>
+  <main class="console">
+    <header class="topbar">
+      <a class="control" id="games-link" href="index.html">‹ Mängud</a>
+      <div class="hud">
+        <div class="team green"><span id="left-label">Roheline</span><strong id="left-score" aria-label="Rohelise punktid">0</strong></div>
+        <time id="clock" datetime="PT90S" aria-label="Jäänud aeg">1:30</time>
+        <div class="team amber"><strong id="right-score" aria-label="Kollase punktid">0</strong><span id="right-label">Kollane</span></div>
+      </div>
+      <div class="actions">
+        <button class="control" id="pause" type="button" disabled>Paus</button>
+        <button class="control" id="fullscreen" type="button" aria-label="Täisekraan" title="Täisekraan">⛶</button>
+      </div>
+    </header>
+
+    <section class="radar" aria-label="Kosmosesadama radar">
+      <canvas id="radar" width="960" height="460" aria-label="Kosmoselaevad, dokid ja asteroid"></canvas>
+      <div class="overlay" id="menu">
+        <div class="panel">
+          <h1>Lennujuht</h1>
+          <p>Joonista laevale rada sama värvi dokini.</p>
+          <div class="choices">
+            <button type="button" class="choice green" id="solo">Üksinda<span>Arvuti vastu</span></button>
+            <button type="button" class="choice amber" id="duo">Kahekesi<span>Samal ekraanil</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="overlay" id="paused" hidden>
+        <div class="panel compact">
+          <h2>Paus</h2>
+          <div class="choices">
+            <button type="button" class="choice green" id="resume">Jätka</button>
+            <button type="button" class="choice amber" id="pause-menu">Menüüsse</button>
+          </div>
+        </div>
+      </div>
+      <div class="overlay" id="finished" hidden>
+        <div class="panel compact">
+          <h2 id="winner"></h2>
+          <p id="final-score"></p>
+          <div class="choices">
+            <button type="button" class="choice green" id="replay">Uus mäng</button>
+            <button type="button" class="choice amber" id="end-menu">Menüüsse</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="status-bar">
+      <span id="status" role="status">Lohista laevalt sama värvi dokki.</span>
+      <span class="legend"><i></i> Kokkupõrke oht</span>
+    </footer>
+    <noscript>Lennujuhi mängimiseks luba brauseris JavaScript.</noscript>
+  </main>
+</body>
+</html>

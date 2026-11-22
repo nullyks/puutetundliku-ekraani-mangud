@@ -1,6 +1,6 @@
 # Puutetundliku ekraani mängud
 
-Projekti eesmärk on katsetada lihtsaid puutemänge Raspberry Pi 400 ja 7-tollise ekraaniga. **Pong** on retrostiilis reketimäng ning **Õhuhoki** on neoonvärvides küberpungi stiilis litrimäng. Mõlemas saab mängida arvuti või teise inimese vastu.
+Projekti eesmärk on katsetada puutemänge Raspberry Pi 400 ja 7-tollise ekraaniga. **Pong** on retrostiilis reketimäng, **Õhuhoki** neoonvärvides litrimäng ja **Lennujuht** kosmosesadama marsruudimäng. Kõigis saab mängida arvuti või teise inimese vastu.
 
 ## Käivitamine Raspberry Pi-s
 
@@ -21,9 +21,16 @@ Kui repo on juba olemas, tõmba mängu värske versioon järgmise käsuga. Kui m
 git -C ~/puutetundliku-ekraani-mangud pull --ff-only
 ```
 
-Ühine mänguvalik on failis [`index.html`](index.html). Avalehelt saab avada [Pongi](pong.html) või [Õhuhoki](air-hockey.html). Nupp **Mängud** viib mõlema mängu ülaservast avalehele ka pausi ajal ja pärast mängu lõppu. Pärast failide allalaadimist piisab mängimiseks Chromiumist ja internetiühendust pole vaja. Pi arenduskatses oli kasutusel Raspberry Pi OS Desktop (Debian 13 Trixie), Waylandi töölaud labwc-ga ja Chromium 154.
+Ühine mänguvalik on failis [`index.html`](index.html). Avalehelt saab avada [Pongi](pong.html), [Õhuhoki](air-hockey.html) ja [Lennujuhi](lennujuht.html). Nupp **Mängud** viib iga mängu ülaservast avalehele ka pausi ajal ja pärast mängu lõppu. Pärast failide allalaadimist piisab mängimiseks Chromiumist ja internetiühendust pole vaja. Pi arenduskatses oli kasutusel Raspberry Pi OS Desktop (Debian 13 Trixie), Waylandi töölaud labwc-ga ja Chromium 154.
 
 Iga uus mäng saab oma HTML-lehe. Lisa selle link `index.html` mänguvalikusse ja lisa mängulehele samasse kohta **Mängud** link tagasi `index.html`-ile. Avalehe kujundus on failis [`games.css`](games.css).
+
+## Lennujuht
+
+- **Üksinda** juhid rohelisi laevu ja arvuti juhib kollaseid. **Kahekesi** saab kumbki mängija joonistada korraga oma värvi laeva rada.
+- Alusta lohistamist ootel laevalt ja lõpeta sama värvi dokis. Rada läheb sõrme tõstmisel käiku. Asteroidist tuleb kaarega mööda joonistada. Punane rada hoiatab takistuse, vale doki või teise laevaga võimaliku kokkupõrke eest.
+- Dokkimine annab punkti. Kokkupõrkel kaovad laevad. Võidab mängija, kes 90 sekundiga rohkem laevu dokki toob.
+- [`lennujuht.js`](lennujuht.js) joonistab radari ning seob iga aktiivse puute oma laevaga. [`lennujuht-engine.js`](lennujuht-engine.js) kontrollib marsruute, prognoosib kokkupõrkeid ja juhib arvutivastast. Loogikateste käivitab `node --test lennujuht-engine.test.cjs`.
 
 ## Õhuhoki
 
