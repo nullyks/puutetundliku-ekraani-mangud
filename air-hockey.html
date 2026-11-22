@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="et">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Õhuhoki</title>
+  <link rel="stylesheet" href="air-hockey.css">
+  <script defer src="air-hockey-engine.js"></script>
+  <script defer src="air-hockey.js"></script>
+</head>
+<body>
+  <main class="cabinet">
+    <header class="topbar">
+      <a class="control switch-game" href="index.html">‹ Pong</a>
+      <div class="scoreboard" aria-label="Punktiseis" aria-live="polite">
+        <div class="team cyan"><span id="left-label">Vasak</span><strong id="left-score">00</strong></div>
+        <span class="score-mark" aria-hidden="true">/</span>
+        <div class="team pink"><strong id="right-score">00</strong><span id="right-label">Parem</span></div>
+      </div>
+      <div class="top-actions">
+        <button class="control" id="pause" type="button" disabled>Paus</button>
+        <button class="control" id="fullscreen" type="button" aria-label="Täisekraan" title="Täisekraan">⛶</button>
+      </div>
+    </header>
+
+    <section class="table" aria-label="Õhuhoki väljak">
+      <canvas id="rink" width="960" height="480" aria-label="Litter, kaks löögiketast ja väravad"></canvas>
+      <p id="status" class="status" hidden></p>
+      <div class="overlay" id="menu">
+        <div class="panel">
+          <h1>ÕHU<span>HOKI</span></h1>
+          <p>Esimesena 7 väravani.</p>
+          <div class="choices">
+            <button type="button" class="choice primary" id="solo">Üksinda<span>Arvuti vastu</span></button>
+            <button type="button" class="choice secondary" id="duo">Kahekesi<span>Samal ekraanil</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="overlay" id="paused" hidden>
+        <div class="panel compact">
+          <h2>Paus</h2>
+          <div class="choices">
+            <button type="button" class="choice primary" id="resume">Jätka</button>
+            <button type="button" class="choice secondary" id="pause-menu">Menüüsse</button>
+          </div>
+        </div>
+      </div>
+      <div class="overlay" id="finished" hidden>
+        <div class="panel compact">
+          <h2 id="winner"></h2>
+          <div class="choices">
+            <button type="button" class="choice primary" id="replay">Uus mäng</button>
+            <button type="button" class="choice secondary" id="end-menu">Menüüsse</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="hints">
+      <span>Lohista löögiketast oma väljakupoolel.</span>
+      <span id="duo-keys">Vasak <kbd>WASD</kbd> · parem <kbd>↑↓←→</kbd></span>
+      <span id="solo-keys" hidden><kbd>WASD</kbd> või <kbd>↑↓←→</kbd></span>
+    </footer>
+    <noscript>Õhuhoki mängimiseks luba brauseris JavaScript.</noscript>
+  </main>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # Puutetundliku ekraani mängud
 
-Projekti eesmärk on katsetada lihtsaid puutemänge Raspberry Pi 400 ja 7-tollise ekraaniga. Esimene demo on retrostiilis **Pong**, milles saab mängida arvuti või teise inimese vastu.
+Projekti eesmärk on katsetada lihtsaid puutemänge Raspberry Pi 400 ja 7-tollise ekraaniga. **Pong** on retrostiilis reketimäng ning **Õhuhoki** on neoonvärvides küberpungi stiilis litrimäng. Mõlemas saab mängida arvuti või teise inimese vastu.
 
 ## Käivitamine Raspberry Pi-s
 
@@ -21,9 +21,16 @@ Kui repo on juba olemas, tõmba mängu värske versioon järgmise käsuga. Kui m
 git -C ~/puutetundliku-ekraani-mangud pull --ff-only
 ```
 
-Mäng käivitub kohalikust `index.html` failist. Pärast failide allalaadimist piisab mängimiseks Chromiumist ja internetiühendust pole vaja. Pi arenduskatses oli kasutusel Raspberry Pi OS Desktop (Debian 13 Trixie), Waylandi töölaud labwc-ga ja Chromium 154.
+Pongi avab `index.html`, õhuhoki avab `air-hockey.html`. Mõlemal lehel saab valida ka teise mängu. Pärast failide allalaadimist piisab mängimiseks Chromiumist ja internetiühendust pole vaja. Pi arenduskatses oli kasutusel Raspberry Pi OS Desktop (Debian 13 Trixie), Waylandi töölaud labwc-ga ja Chromium 154.
 
-## Mängujuhend
+## Õhuhoki
+
+- **Üksinda** juhid vasakut löögiketast ja arvuti juhib paremat. **Kahekesi** juhib kumbki mängija ketast oma väljakupoolel. Lohista sõrme nii piki- kui ka põikisuunas. Löögiketas jääb oma poolele ka siis, kui sõrm liigub üle keskjoone.
+- Löögiketta kiirus ja suund mõjutavad litri põrget. Punkt läheb kirja siis, kui litter läbib väravaava. Võidab esimene, kes lööb **7 väravat**.
+- Klaviatuuril on vasaku mängija klahvid `WASD` ja paremal nooleklahvid. Üksikmängus sobivad mõlemad klahvikomplektid. Kasuta **Paus** nuppu või `Esc` klahvi ning ava täisekraan nupuga `⛶` või `F11` klahviga.
+- Väljaku ja menüü kood on failides `air-hockey.html`, `air-hockey.css` ja `air-hockey.js`. Füüsika ja arvutivastane on failis `air-hockey-engine.js`. Mõlema mängu loogikateste käivitab `node --test`.
+
+## Pongi mängujuhend
 
 | Režiim | Puutega | Klaviatuuriga |
 | --- | --- | --- |
