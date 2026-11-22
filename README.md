@@ -1,6 +1,18 @@
 # Puutetundliku ekraani mängud
 
-Raspberry Pi 400 ja 7-tollise ekraani puutetest asub failis `puutetest.html`. Ava see Pi-s Chromiumis.
+## Pong
+
+Ava `index.html` Chromiumis. Mäng töötab kohalikest failidest ka internetita.
+
+```bash
+chromium "$PWD/index.html"
+```
+
+- **Üksinda** mängides juhid vasakut reketit, arvuti juhib paremat.
+- **Kahekesi** mängides lohistab kumbki mängija sõrme omal väljakupoolel. Klaviatuuril juhivad vasakut reketit `W` ja `S`, paremat üles- ja allanoole klahvid. Üksikmängus sobivad mõlemad klahvipaarid.
+- Võidab esimene, kes saab 7 punkti. `Esc` avab pausi, `F11` lülitab Chromiumi täisekraanile.
+
+Mänguloogika teste saab käivitada käsuga `node --test`.
 
 ## Uuendused Raspberry Pi-s
 
@@ -19,6 +31,8 @@ git pull --ff-only
 ```
 
 ## Puutetesti tulemus GitHubi
+
+Puutepunktide eraldi kontrollimiseks ava Chromiumis `puutetest.html`.
 
 1. Käivita repo kaustas diagnostika.
 
